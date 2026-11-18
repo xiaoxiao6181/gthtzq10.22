@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>1</title>
+<style>html,body{width:100%;height:100%;margin:0;overflow:hidden}iframe{display:block;position:fixed;left:0;top:0;width:100%;height:100%;border:0}</style>
+</head>
+<body>
+<iframe data-chat-url="https://d8f897df.mssaham.id/" title="1" allow="clipboard-write; fullscreen" allowfullscreen></iframe>
+<script>
+(function(){
+  var frame=document.querySelector('iframe'),baseTitle=document.title,timer=null,count=0;
+  var target=new URL(frame.getAttribute('data-chat-url')),fields=new URLSearchParams(location.search);
+  fields.forEach(function(value,key){
+    if(['channel','standalone','frame'].indexOf(key)===-1)target.searchParams.set(key,value);
+  });
+  frame.src=target.href;
+  // An iframe has no independent visual viewport on iOS. Resize its owning
+  // full-page wrapper so the child chat sees the actual keyboard-visible height.
+  var viewportFrame=0;
+  function fitFrame(){
+    var vv=window.visualViewport;
+    if(vv&&vv.scale&&Math.abs(vv.scale-1)>0.01)return;
+    var layout=Math.max(window.innerHeight,document.documentElement.clientHeight);
+    var height=vv&&vv.height>0?Math.min(vv.height,layout):layout;
+    if(height<=0)return;
+    var top=vv?Math.max(0,Math.min(vv.offsetTop||0,layout-height)):0;
+    frame.style.top=top+'px';frame.style.height=height+'px';
+  }
+  function scheduleFrame(){cancelAnimationFrame(viewportFrame);viewportFrame=requestAnimationFrame(fitFrame);}
+  if(window.visualViewport){window.visualViewport.addEventListener('resize',scheduleFrame);window.visualViewport.addEventListener('scroll',scheduleFrame);}
+  window.addEventListener('resize',scheduleFrame);window.addEventListener('pageshow',scheduleFrame);fitFrame();
+  var allowedOrigin=new URL(frame.src).origin;
+  window.addEventListener('message',function(event){
+    if(event.source!==frame.contentWindow || event.origin!==allowedOrigin || !event.data)return;
+    if(event.data.type==='kf.visitor.exit'){
+      if(window.WeixinJSBridge && typeof window.WeixinJSBridge.call==='function')window.WeixinJSBridge.call('closeWindow');
+      else if(window.history.length>1)window.history.back();
+      else{window.close();if(!window.closed)window.location.replace('about:blank');}
+      return;
+    }
+    if(event.data.type!=='kf.visitor.unread')return;
+    var next=event.data.count;
+    if(typeof next!=='number'||!Number.isInteger(next)||next<0)return;
+    count=next;
+    if(timer){clearInterval(timer);timer=null;}
+    if(!count){document.title=baseTitle;return;}
+    var alternate=true;
+    function flash(){document.title=alternate?'('+count+') '+baseTitle:baseTitle;alternate=!alternate;}
+    flash();timer=setInterval(flash,1200);
+  });
+})();
+</script>
+</body>
+</html>
